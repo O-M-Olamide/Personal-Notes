@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Note of Appreciation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .envelope-wrapper {
+            perspective: 1000px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
+
+        .envelope-wrapper.hidden {
+            display: none;
+        }
+
+        .envelope-wrapper:hover {
+            transform: translate(-50%, -50%) scale(1.02);
+        }
+
+        .envelope {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .envelope.opened {
+            transform: translateY(-150px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .envelope-body {
+            background: linear-gradient(135deg, #d4af77 0%, #c9a164 100%);
+            padding: 60px 40px;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .envelope-body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(135deg, #c9a164 0%, #b89355 100%);
+            transform-origin: top center;
+            transition: transform 0.6s ease;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .envelope.opening .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .envelope-message {
+            text-align: center;
+            color: #fff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .envelope-message h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .envelope-message p {
+            font-size: 16px;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .tap-hint {
+            margin-top: 25px;
+            font-size: 14px;
+            opacity: 0.9;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 0.6; }
+        }
+
+        .letter-content {
+            background: #faf7f2;
+            padding: 60px 50px;
+            border-radius: 8px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateY(50px);
+            pointer-events: none;
+            transition: all 1s ease;
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .letter-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, rgba(200,200,200,0.1) 1px, transparent 1px),
+                linear-gradient(rgba(200,200,200,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .letter-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .letter-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d4af77;
+            padding-bottom: 25px;
+        }
+
+        .letter-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            color: #5a4a3a;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .letter-header .recipient {
+            font-size: 20px;
+            color: #8b7355;
+            font-style: italic;
+        }
+
+        .letter-body {
+            color: #4a4a4a;
+            line-height: 1.9;
+            font-size: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .letter-body p {
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .letter-signature {
+            margin-top: 50px;
+            text-align: right;
+            font-style: italic;
+            color: #6a5a4a;
+            font-size: 17px;
+        }
+
+        .letter-footer {
+            margin-top: 50px;
+            padding-top: 25px;
+            border-top: 1px solid #d4af77;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 35px;
+            background: linear-gradient(135deg, #d4af77 0%, #c9a164 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 119, 0.3);
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 119, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .envelope-body {
+                padding: 40px 25px;
+            }
+
+            .envelope-message h2 {
+                font-size: 22px;
+            }
+
+            .letter-content {
+                padding: 40px 30px;
+                margin-top: 80px;
+            }
+
+            .letter-header h1 {
+                font-size: 28px;
+            }
+
+            .letter-body {
+                font-size: 15px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .envelope-wrapper,
+            .letter-footer {
+                display: none !important;
+            }
+
+            .letter-content {
+                box-shadow: none;
+                margin-top: 0;
+                opacity: 1 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="envelope-wrapper" id="envelopeWrapper">
+            <div class="envelope" id="envelope">
+                <div class="envelope-flap"></div>
+                <div class="envelope-body">
+                    <div class="envelope-message">
+                        <h2>You've got a note of appreciation...</h2>
+                        <p>A heartfelt message awaits you</p>
+                        <p class="tap-hint">✨ Click to open ✨</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="letter-content" id="letterContent">
+            <div class="letter-header">
+                <h1>A Letter of Gratitude</h1>
+                <p class="recipient">For Mr. Bamigbola</p>
+            </div>
+
+            <div class="letter-body">
+                <p>Dear Mr. Bamigbola,</p>
+
+                <p>I hope this message meets you well. I'd first like to sincerely apologize for sending this quite later than I should have. I officially completed my IT on September 17th, and I was back at the office about a week later for my final clearance. Since then, I've been caught up with some personal commitments and pressing school deadlines, which delayed me from reaching out sooner. I'm now fully back in school, and I just couldn't go any longer without properly expressing my gratitude to you.</p>
+
+                <p>I still remember my very first day at the office. After checking in with the HR personnel, I was taken straight to your office, and that was where it all began. You asked me a simple question that morning: "Can you design?" That question stayed with me. It reignited something I had put aside for a while, my passion and interest in design. It felt like a spark that brought me back to something I truly enjoyed.</p>
+
+                <p>From that moment, my first impression of you was that you were someone who valued discipline, structure, and results. You believed in getting things done, no excuses, no stories, just output. Over time, I realized that beneath that firmness was someone who genuinely cared about helping others grow.</p>
+
+                <p>Working directly under you throughout my IT shaped me in many ways. You guided me, corrected me, and most importantly, helped me think differently. You challenged how I approached problems and helped me see things from a broader perspective.</p>
+
+                <p>There were several memorable moments, especially the times you assigned me tasks that pushed me to give my best, and you noticed those efforts. Your words of acknowledgment meant a lot; they motivated me to always improve.</p>
+
+                <p>What stood out the most to me about your leadership style was your flexibility and understanding. There were moments when I had other pressing engagements, and all I had to do was communicate with you. You always listened and understood, which made me want to deliver even better whenever I was available. That balance of firmness and empathy is something I deeply respect.</p>
+
+                <p>Looking back now, I'm truly grateful for your guidance, patience, and all the support you gave me during my stay. From helping me with the necessary registrations and documentation to signing every form and logbook without hesitation, you made the process smooth and stress-free.</p>
+
+                <p>Thank you so much, sir. You made my IT experience a meaningful one, and I'm sincerely thankful for that.</p>
+
+                <div class="letter-signature">
+                    <p>With deep appreciation,</p>
+                    <p><strong>Oseni Mustapha Olamide</strong></p>
+                </div>
+            </div>
+
+            <div class="letter-footer">
+                <button class="btn" onclick="location.reload()">📧 Close Letter</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const envelope = document.getElementById('envelope');
+        const envelopeWrapper = document.getElementById('envelopeWrapper');
+        const letterContent = document.getElementById('letterContent');
+
+        envelopeWrapper.addEventListener('click', function() {
+            envelope.classList.add('opening');
+            
+            setTimeout(() => {
+                envelope.classList.add('opened');
+                envelopeWrapper.classList.add('hidden');
+                
+                setTimeout(() => {
+                    letterContent.classList.add('visible');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 400);
+            }, 600);
+        });
+    </script>
+</body>
+</html>
